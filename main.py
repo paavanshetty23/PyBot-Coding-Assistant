@@ -8,34 +8,26 @@ import json
 from notdiamond import NotDiamond
 import warnings
 
-# Suppress Pydantic warnings (Temporary fix)
 warnings.filterwarnings("ignore", message="Valid config keys have changed in V2")
 
-# Load environment variables from .env file
 load_dotenv()
 
-# Retrieve the API keys from the environment
 notdiamond_api_key = os.getenv("NOTDIAMOND_API_KEY")
 openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
 
-# Ensure the API keys are available
 if not notdiamond_api_key or not openrouter_api_key:
     st.error("API keys not found. Please set the NOTDIAMOND_API_KEY and OPENROUTER_API_KEY environment variables.")
     st.stop()
 
-# Set page config
 st.set_page_config(page_title="PyBot", page_icon="🐍", layout="wide")
 
-# Function to encode the image
 def get_base64_of_bin_file(bin_file):
     with open(bin_file, 'rb') as f:
         data = f.read()
     return base64.b64encode(data).decode()
 
-# Set background image
 background_image = get_base64_of_bin_file('bg.avif')
 
-# Custom CSS to improve the look
 st.markdown(f"""
 <style>
     .stApp {{
@@ -114,6 +106,7 @@ function copyToClipboard(button, codeId) {
         button.textContent = 'Copied!';
         setTimeout(function() {
             button.textContent = 'Copy';
+
         }, 2000);
     }).catch(function(err) {
         console.error('Failed to copy: ', err);
@@ -128,7 +121,6 @@ client = NotDiamond()
 llm_providers = ['openai/gpt-3.5-turbo', 'openai/gpt-4-1106-preview', 'openai/gpt-4-turbo-preview', 
                  'anthropic/claude-3-haiku-20240307', 'anthropic/claude-3-opus-20240229']
 
-# Sidebar for selecting LLM provider
 selected_llm = st.sidebar.selectbox("Select LLM Provider", llm_providers, index=0)
 
 def get_response(user_input, selected_llm):
@@ -165,7 +157,6 @@ def format_response(response):
     for line in response.split('\n'):
         if line.strip().startswith("```"):
             if in_code_block:
-                # Close the code block
                 code_id = f"code-block-{code_block_count}"
                 formatted_response += f'<pre><code id="{code_id}">{code_block.strip()}</code></pre>\n'
                 formatted_response += get_copy_button(code_id, code_block_count) + '\n'
@@ -173,15 +164,13 @@ def format_response(response):
                 code_block = ""
                 code_block_count += 1
             else:
-                # Start the code block
                 in_code_block = True
         elif in_code_block:
             code_block += line + '\n'
         else:
-            formatted_response += line + '\n\n'  # Add extra newline for paragraph spacing
+            formatted_response += line + '\n\n'
 
     if in_code_block:
-        # Close any unclosed code block
         code_id = f"code-block-{code_block_count}"
         formatted_response += f'<pre><code id="{code_id}">{code_block.strip()}</code></pre>\n'
         formatted_response += get_copy_button(code_id, code_block_count) + '\n'
@@ -195,36 +184,28 @@ def get_copy_button(code_id, button_id):
 
 st.title("🐍 PyBot: Your Python Coding Assistant")
 
-# Initialize chat history
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Display chat messages from history on app rerun
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"], unsafe_allow_html=True)
 
-# React to user input
 if prompt := st.chat_input("Ask your Python question here..."):
-    # Display user message in chat message container
     st.chat_message("user").markdown(prompt)
-    # Add user message to chat history
     st.session_state.messages.append({"role": "user", "content": prompt})
 
     response, model_used = get_response(prompt, selected_llm)
     formatted_response = format_response(response)
 
-    # Display assistant response in chat message container
     with st.chat_message("assistant"):
         st.markdown(formatted_response, unsafe_allow_html=True)
         
         if model_used:
             st.info(f"Model used: {model_used}")
             
-    # Add assistant response to chat history
     st.session_state.messages.append({"role": "assistant", "content": formatted_response})
 
-# Sidebar
 with st.sidebar:
     st.title("About PyBot")
     st.write("PyBot is your AI assistant for Python-related coding questions. Feel free to ask about:")
@@ -236,11 +217,9 @@ with st.sidebar:
 
     st.divider()
 
-    # Developer Information
     st.subheader("Developer")
     st.write("Paavan Shetty")
     
-    # LinkedIn and GitHub links
     col1, col2 = st.columns(2)
     with col1:
         st.markdown("[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/paavan-shetty-419667259/)")
