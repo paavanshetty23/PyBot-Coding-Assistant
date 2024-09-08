@@ -1,0 +1,6 @@
+streamlit
+langchain-ollama
+python-dotenv
+chardet
+charset-normalizer
+notdiamond
