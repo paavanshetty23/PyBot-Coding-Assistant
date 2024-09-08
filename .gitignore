@@ -1,1 +1,42 @@
+# Python-related
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.env
+*.venv
+ENV/
+env/
+venv/
+*.egg-info/
+*.eggs/
+*.log
+
+# Streamlit cache and settings
+.streamlit/
+*.streamlit
+
+# OS-related
+.DS_Store
+Thumbs.db
+
+# Background images or other media
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.avif
+
+# Virtual environment
+venv/
 .env
+*.env
+
+# Jupyter Notebooks checkpoints
+.ipynb_checkpoints/
+
+# Other backups and temporary files
+*.swp
+*.swo
+*~
