@@ -11,7 +11,7 @@ warnings.filterwarnings("ignore", message="Valid config keys have changed in V2"
 
 load_dotenv()
 
-# Use Groq API key instead
+# Use Groq API key 
 groq_api_key = os.getenv("GROQ_API_KEY")
 
 if not groq_api_key:
@@ -138,15 +138,17 @@ def get_response(user_input, selected_llm):
             },
             json={
                 "model": selected_llm,
-                "messages": messages
+                "messages": messages,
+                "temperature": 0.7
             }
         )
         response.raise_for_status()
         
-        if 'choices' in response.json():
-            return response.json()['choices'][0]['message']['content'], selected_llm
+        response_json = response.json()
+        if 'choices' in response_json:
+            return response_json['choices'][0]['message']['content'], selected_llm
         else:
-            return f"Unexpected response format: {response.json()}", None
+            return f"Unexpected response format: {response_json}", None
     except requests.exceptions.RequestException as e:
         return f"An error occurred: {e}", None
 
