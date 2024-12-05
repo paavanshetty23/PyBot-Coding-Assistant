@@ -123,35 +123,52 @@ llm_providers = [
 
 selected_llm = st.sidebar.selectbox("Select LLM Provider", llm_providers, index=0)
 
-def get_response(user_input, selected_llm):
-    messages = [
-        {"role": "system", "content": "You are a world class Python developer assistant. Please provide concise, Python-related responses. When providing code, ensure proper indentation and formatting."},
-        {"role": "user", "content": user_input}
-    ]
+def get_response(user_input, selected_llm="llama3-8b-8192"):
+    """
+    Fetch a response from Groq's API based on user input.
 
+    Parameters:
+    - user_input (str): The prompt or query from the user.
+    - selected_llm (str): The model name to use. Default is "llama3-8b-8192".
+
+    Returns:
+    - str: The response from the Groq API, or an error message if something goes wrong.
+    """
     try:
-        response = requests.post(
-            url="https://api.groq.com/openai/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {groq_api_key}",
-                "Content-Type": "application/json"
-            },
-            json={
-                "model": selected_llm,
-                "messages": messages,
-                "temperature": 0.7
-            }
-        )
-        response.raise_for_status()
+        # Define the API endpoint
+        url = "https://api.groq.com/openai/v1/chat/completions"
         
-        response_json = response.json()
-        if 'choices' in response_json:
-            return response_json['choices'][0]['message']['content'], selected_llm
-        else:
-            return f"Unexpected response format: {response_json}", None
-    except requests.exceptions.RequestException as e:
-        return f"An error occurred: {e}", None
+        # Load the API key from environment variables
+        groq_api_key = os.getenv("GROQ_API_KEY")
+        if not groq_api_key:
+            raise ValueError("Groq API key not found. Please set the GROQ_API_KEY environment variable.")
 
+        # Prepare headers and payload
+        headers = {
+            "Authorization": f"Bearer {groq_api_key}",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "model": selected_llm,
+            "messages": [
+                {"role": "system", "content": "You are a world-class Python developer assistant."},
+                {"role": "user", "content": user_input}
+            ],
+            "max_tokens": 2048
+        }
+
+        # Send the request to the Groq API
+        response = requests.post(url, headers=headers, json=payload)
+        response.raise_for_status()  # Raise an error for HTTP status codes 4xx/5xx
+
+        # Extract and return the AI's response
+        return response.json()["choices"][0]["message"]["content"]
+    except requests.exceptions.RequestException as e:
+        # Handle API-related errors (e.g., connectivity, 404 errors)
+        return f"Error with Groq API request: {e}"
+    except Exception as e:
+        # Handle other exceptions
+        return f"An unexpected error occurred: {e}"
 def format_response(response):
     formatted_response = ""
     in_code_block = False
